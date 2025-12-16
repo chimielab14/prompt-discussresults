@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Prompt Generator for Study Discussion</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: #f5f5f7;
+      color: #222;
+      direction: ltr;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 24px;
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    }
+
+    h1 {
+      margin-top: 0;
+      margin-bottom: 8px;
+      font-size: 1.7rem;
+      text-align: center;
+    }
+
+    .top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+
+    .lang-select-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+    }
+
+    select {
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid #d1d5db;
+      font-size: 0.9rem;
+      background: #f9fafb;
+    }
+
+    .disclaimer {
+      background: #fff8c5;
+      border: 1px solid #f1dd7d;
+      padding: 12px 16px;
+      margin: 0 0 24px 0;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      line-height: 1.45;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 0.95rem;
+      color: #555;
+      margin-bottom: 24px;
+    }
+
+    .section {
+      margin-bottom: 20px;
+    }
+
+    .section-label {
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 8px 18px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      background: #2563eb;
+      color: #fff;
+      font-weight: 500;
+      transition: transform 0.05s ease, box-shadow 0.1s ease,
+        background 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
+      transform: translateY(-1px);
+    }
+
+    button:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+
+    button.secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    button.secondary:hover {
+      background: #d1d5db;
+      box-shadow: 0 2px 8px rgba(148, 163, 184, 0.4);
+    }
+
+    .file-display {
+      margin-top: 8px;
+      font-size: 0.9rem;
+      background: #f9fafb;
+      border-radius: 10px;
+      padding: 10px 12px;
+      border: 1px solid #e5e7eb;
+      max-height: 200px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .file-display.empty {
+      color: #9ca3af;
+      font-style: italic;
+    }
+
+    .buttons-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 16px 0 20px;
+    }
+
+    textarea {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      padding: 10px 12px;
+      font-size: 0.95rem;
+      resize: vertical;
+      min-height: 220px;
+      background: #f9fafb;
+    }
+
+    textarea:focus {
+      outline: 2px solid #2563eb;
+      outline-offset: 1px;
+      background: #ffffff;
+    }
+
+    .label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        margin: 16px;
+        padding: 16px;
+      }
+      h1 {
+        font-size: 1.3rem;
+      }
+      .buttons-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      button {
+        justify-content: center;
+        width: 100%;
+      }
+      .top-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .label-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="top-row">
+      <h1 id="pageTitle">Prompt Generator for Study Discussion</h1>
+      <div class="lang-select-wrapper">
+        <span id="langLabel">Language:</span>
+        <select id="langSelect">
+          <option value="en">English</option>
+          <option value="fr">Français</option>
+          <option value="ar">العربية</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- DISCLAIMER -->
+    <div class="disclaimer">
+      <span id="disclaimerText">
+        This page generates a prompt that will be used to instruct a chatbot to
+        discuss the results of a study and compare them with the selected
+        reference papers. This concept and workflow were originally proposed by
+        the teacher <strong>May Abdelghani</strong>.
+      </span>
+    </div>
+
+    <p class="subtitle" id="subtitle">
+      Select your results file and reference PDFs, then generate a ready-to-use
+      prompt for your chatbot.
+    </p>
+
+    <!-- Results file section -->
+    <div class="section">
+      <span class="section-label" id="resultsLabel">
+        1. Select the results file (single PDF)
+      </span>
+      <button id="selectResultsBtn" type="button">
+        <span id="selectResultsBtnText">Select Results PDF</span>
+      </button>
+      <input
+        type="file"
+        id="resultsFileInput"
+        accept=".pdf"
+        style="display: none"
+      />
+      <div id="resultsFileName" class="file-display empty">
+        <span id="noResultsText">No results file selected.</span>
+      </div>
+    </div>
+
+    <!-- Reference files section -->
+    <div class="section">
+      <span class="section-label" id="refsLabel">
+        2. Select the reference files (one or more PDFs)
+      </span>
+      <button id="selectRefsBtn" type="button">
+        <span id="selectRefsBtnText">Select Reference PDFs</span>
+      </button>
+      <input
+        type="file"
+        id="refsFileInput"
+        accept=".pdf"
+        multiple
+        style="display: none"
+      />
+      <div id="refsList" class="file-display empty">
+        <span id="noRefsText">No reference files selected.</span>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="buttons-row">
+      <button id="generatePromptBtn" type="button">
+        <span id="generateBtnText">Generate Prompt</span>
+      </button>
+      <button id="resetBtn" type="button" class="secondary">
+        <span id="resetBtnText">Reset</span>
+      </button>
+      <button id="copyBtn" type="button" class="secondary">
+        <span id="copyBtnText">Copy Prompt</span>
+      </button>
+    </div>
+
+    <!-- Output -->
+    <div class="section">
+      <div class="label-row">
+        <span class="section-label" id="outputLabel">Generated prompt</span>
+      </div>
+      <textarea
+        id="promptOutput"
+        placeholder="Your prompt will appear here..."
+        readonly
+      ></textarea>
+    </div>
+  </div>
+
+  <script>
+    const selectResultsBtn = document.getElementById("selectResultsBtn");
+    const selectRefsBtn = document.getElementById("selectRefsBtn");
+    const resultsFileInput = document.getElementById("resultsFileInput");
+    const refsFileInput = document.getElementById("refsFileInput");
+    const resultsFileNameDiv = document.getElementById("resultsFileName");
+    const refsListDiv = document.getElementById("refsList");
+    const generatePromptBtn = document.getElementById("generatePromptBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const copyBtn = document.getElementById("copyBtn");
+    const promptOutput = document.getElementById("promptOutput");
+    const langSelect = document.getElementById("langSelect");
+
+    const pageTitle = document.getElementById("pageTitle");
+    const langLabel = document.getElementById("langLabel");
+    const disclaimerText = document.getElementById("disclaimerText");
+    const subtitle = document.getElementById("subtitle");
+    const resultsLabel = document.getElementById("resultsLabel");
+    const selectResultsBtnText = document.getElementById("selectResultsBtnText");
+    const noResultsText = document.getElementById("noResultsText");
+    const refsLabel = document.getElementById("refsLabel");
+    const selectRefsBtnText = document.getElementById("selectRefsBtnText");
+    const noRefsText = document.getElementById("noRefsText");
+    const generateBtnText = document.getElementById("generateBtnText");
+    const resetBtnText = document.getElementById("resetBtnText");
+    const copyBtnText = document.getElementById("copyBtnText");
+    const outputLabel = document.getElementById("outputLabel");
+
+    const translations = {
+      en: {
+        htmlLang: "en",
+        dir: "ltr",
+        pageTitle: "Prompt Generator for Study Discussion",
+        langLabel: "Language:",
+        disclaimer:
+          'This page generates a prompt that will be used to instruct a chatbot to discuss the results of a study and compare them with the selected reference papers. This concept and workflow were originally proposed by the teacher <strong>May Abdelghani</strong>.',
+        subtitle:
+          "Select your results file and reference PDFs, then generate a ready-to-use prompt for your chatbot.",
+        resultsLabel: "1. Select the results file (single PDF)",
+        selectResultsBtn: "Select Results PDF",
+        noResultsText: "No results file selected.",
+        refsLabel: "2. Select the reference files (one or more PDFs)",
+        selectRefsBtn: "Select Reference PDFs",
+        noRefsText: "No reference files selected.",
+        generateBtn: "Generate Prompt",
+        resetBtn: "Reset",
+        copyBtn: "Copy Prompt",
+        outputLabel: "Generated prompt",
+        alerts: {
+          selectResults: "Please select a results file first.",
+          selectRefs: "Please select at least one reference PDF.",
+          noPrompt: "There is no prompt to copy.",
+          copySuccess: "Prompt copied to clipboard.",
+          copyFail: "Copy failed. Please copy manually."
+        },
+        placeholder: "Your prompt will appear here..."
+      },
+      fr: {
+        htmlLang: "fr",
+        dir: "ltr",
+        pageTitle: "Générateur de consigne pour la discussion d'étude",
+        langLabel: "Langue :",
+        disclaimer:
+          'Cette page génère une consigne (prompt) destinée à un chatbot pour qu’il discute les résultats d’une étude et les compare aux articles de référence sélectionnés. Cette idée et ce mode de travail ont été proposés à l’origine par l’enseignante <strong>May Abdelghani</strong>.',
+        subtitle:
+          "Sélectionnez votre fichier de résultats et les PDF de référence, puis générez une consigne prête à être utilisée avec votre chatbot.",
+        resultsLabel:
+          "1. Sélectionner le fichier de résultats (un seul PDF)",
+        selectResultsBtn: "Choisir le PDF de résultats",
+        noResultsText: "Aucun fichier de résultats sélectionné.",
+        refsLabel:
+          "2. Sélectionner les fichiers de référence (un ou plusieurs PDF)",
+        selectRefsBtn: "Choisir les PDF de référence",
+        noRefsText: "Aucun fichier de référence sélectionné.",
+        generateBtn: "Générer la consigne",
+        resetBtn: "Réinitialiser",
+        copyBtn: "Copier la consigne",
+        outputLabel: "Consigne générée",
+        alerts: {
+          selectResults:
+            "Veuillez d’abord sélectionner un fichier de résultats.",
+          selectRefs:
+            "Veuillez sélectionner au moins un fichier PDF de référence.",
+          noPrompt: "Il n’y a encore aucune consigne à copier.",
+          copySuccess: "Consigne copiée dans le presse-papiers.",
+          copyFail:
+            "Échec de la copie. Veuillez copier manuellement."
+        },
+        placeholder: "La consigne générée apparaîtra ici..."
+      },
+      ar: {
+        htmlLang: "ar",
+        dir: "rtl",
+        pageTitle: "مولّد نص التعليمات لمناقشة الدراسة",
+        langLabel: "اللغة:",
+        disclaimer:
+          'تقوم هذه الصفحة بإنشاء مطالبة (prompt) تُستخدم لتوجيه روبوت المحادثة لمناقشة نتائج دراسة ما ومقارنتها بالمراجع المختارة. تعود فكرة هذه الأداة وطريقة العمل هذه في الأصل إلى الأستاذة <strong>مي عبدالغني</strong>.',
+        subtitle:
+          "اختر ملف النتائج وملفات المراجع (PDF)، ثم أنشئ نص تعليمات جاهزاً لإرساله إلى روبوت المحادثة.",
+        resultsLabel: "1. اختيار ملف النتائج (ملف PDF واحد)",
+        selectResultsBtn: "اختيار ملف النتائج (PDF)",
+        noResultsText: "لم يتم اختيار ملف للنتائج.",
+        refsLabel: "2. اختيار ملفات المراجع (ملف PDF واحد أو أكثر)",
+        selectRefsBtn: "اختيار ملفات المراجع (PDF)",
+        noRefsText: "لم يتم اختيار ملفات مراجع.",
+        generateBtn: "إنشاء نص التعليمات",
+        resetBtn: "إعادة الضبط",
+        copyBtn: "نسخ النص",
+        outputLabel: "نص التعليمات المُنشأ",
+        alerts: {
+          selectResults: "يرجى اختيار ملف النتائج أولاً.",
+          selectRefs: "يرجى اختيار ملف PDF واحد على الأقل من المراجع.",
+          noPrompt: "لا يوجد أي نص لنسخه حالياً.",
+          copySuccess: "تم نسخ النص إلى الحافظة.",
+          copyFail: "فشل النسخ. يرجى النسخ يدوياً."
+        },
+        placeholder: "سيظهر هنا نص التعليمات المُنشأ..."
+      }
+    };
+
+    function setLanguage(lang) {
+      const t = translations[lang] || translations.en;
+
+      document.documentElement.lang = t.htmlLang;
+      document.body.dir = t.dir;
+
+      pageTitle.textContent = t.pageTitle;
+      langLabel.textContent = t.langLabel;
+      disclaimerText.innerHTML = t.disclaimer;
+      subtitle.textContent = t.subtitle;
+      resultsLabel.textContent = t.resultsLabel;
+      selectResultsBtnText.textContent = t.selectResultsBtn;
+      noResultsText.textContent = t.noResultsText;
+      refsLabel.textContent = t.refsLabel;
+      selectRefsBtnText.textContent = t.selectRefsBtn;
+      noRefsText.textContent = t.noRefsText;
+      generateBtnText.textContent = t.generateBtn;
+      resetBtnText.textContent = t.resetBtn;
+      copyBtnText.textContent = t.copyBtn;
+      outputLabel.textContent = t.outputLabel;
+      promptOutput.placeholder = t.placeholder;
+
+      // store for alerts
+      setLanguage.currentAlerts = t.alerts;
+    }
+
+    setLanguage.currentAlerts = translations.en.alerts;
+
+    // Language switcher
+    langSelect.addEventListener("change", () => {
+      setLanguage(langSelect.value);
+    });
+
+    // Initialize default language
+    setLanguage("en");
+
+    // File selection handlers
+    selectResultsBtn.addEventListener("click", () => {
+      resultsFileInput.click();
+    });
+
+    selectRefsBtn.addEventListener("click", () => {
+      refsFileInput.click();
+    });
+
+    resultsFileInput.addEventListener("change", () => {
+      if (resultsFileInput.files && resultsFileInput.files.length > 0) {
+        const file = resultsFileInput.files[0];
+        resultsFileNameDiv.textContent = file.name;
+        resultsFileNameDiv.classList.remove("empty");
+      } else {
+        resultsFileNameDiv.textContent =
+          translations[langSelect.value].noResultsText ||
+          translations.en.noResultsText;
+        resultsFileNameDiv.classList.add("empty");
+      }
+    });
+
+    refsFileInput.addEventListener("change", () => {
+      if (refsFileInput.files && refsFileInput.files.length > 0) {
+        const names = Array.from(refsFileInput.files).map(
+          (file) => file.name
+        );
+        refsListDiv.textContent = names.join("\n");
+        refsListDiv.classList.remove("empty");
+      } else {
+        refsListDiv.textContent =
+          translations[langSelect.value].noRefsText ||
+          translations.en.noRefsText;
+        refsListDiv.classList.add("empty");
+      }
+    });
+
+    // Generate prompt (still in English as the working language for the chatbot)
+    generatePromptBtn.addEventListener("click", () => {
+      const alerts = setLanguage.currentAlerts;
+
+      if (!resultsFileInput.files || resultsFileInput.files.length === 0) {
+        alert(alerts.selectResults);
+        return;
+      }
+
+      if (!refsFileInput.files || refsFileInput.files.length === 0) {
+        alert(alerts.selectRefs);
+        return;
+      }
+
+      const resultsFileName = resultsFileInput.files[0].name;
+      const referenceNames = Array.from(refsFileInput.files).map(
+        (file) => file.name
+      );
+      const referencesBlock = referenceNames.join("\n");
+
+      const promptText = `The attached file "${resultsFileName}" contains the results of the study I am currently conducting. I would like to analyze and discuss these results in-depth and compare them with findings from previously published studies.
+
+I will provide the chatbot with the previous studies in PDF format. The available files are:
+${referencesBlock}
+
+The chatbot should discuss and support the findings of "${resultsFileName}" using eight studies at a time from the list above.
+After generating the first version of the discussion using the first eight papers, it should repeat the process with the next set of eight papers and generate a second version of the discussion. This iterative process should continue until all papers have been used.
+
+Finally, all discussion versions should be merged into one comprehensive and cohesive final discussion.
+
+In-text citations must follow this exact format: (Author, Year, Reference Name from the List)`;
+
+      promptOutput.value = promptText;
+      promptOutput.scrollTop = 0;
+    });
+
+    // Reset
+    resetBtn.addEventListener("click", () => {
+      resultsFileInput.value = "";
+      refsFileInput.value = "";
+      resultsFileNameDiv.classList.add("empty");
+      refsListDiv.classList.add("empty");
+
+      noResultsText.textContent =
+        translations[langSelect.value].noResultsText ||
+        translations.en.noResultsText;
+      noRefsText.textContent =
+        translations[langSelect.value].noRefsText ||
+        translations.en.noRefsText;
+
+      resultsFileNameDiv.textContent = noResultsText.textContent;
+      refsListDiv.textContent = noRefsText.textContent;
+
+      promptOutput.value = "";
+    });
+
+    // Copy
+    copyBtn.addEventListener("click", async () => {
+      const alerts = setLanguage.currentAlerts;
+      const text = promptOutput.value.trim();
+      if (!text) {
+        alert(alerts.noPrompt);
+        return;
+      }
+
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          const tempTextArea = document.createElement("textarea");
+          tempTextArea.value = text;
+          document.body.appendChild(tempTextArea);
+          tempTextArea.select();
+          document.execCommand("copy");
+          document.body.removeChild(tempTextArea);
+        }
+        alert(alerts.copySuccess);
+      } catch (err) {
+        console.error(err);
+        alert(alerts.copyFail);
+      }
+    });
+  </script>
+</body>
+</html>
